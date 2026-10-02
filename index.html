@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-in-One Dashboard 報表介紹</title>
+<meta name="description" content="AI-in-One Dashboard：一份 Power BI 報表，整合所有 Microsoft Copilot 與 Agent 採用訊號">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f6f8fc; --card:#ffffff; --line:#e3e8f2;
+    --text:#1b1f2e; --muted:#5b6478;
+    --blue:#0078d4; --cyan:#50e6ff; --purple:#8661c5; --pink:#d84ea0; --green:#3fc380;
+    --grad:linear-gradient(90deg,#50e6ff 0%,#0078d4 35%,#8661c5 70%,#d84ea0 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI","Microsoft JhengHei","Noto Sans TC",system-ui,-apple-system,sans-serif;
+       background:var(--bg);color:var(--text);line-height:1.65;-webkit-font-smoothing:antialiased}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* Nav */
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+  .logo{width:26px;height:26px;display:grid;grid-template-columns:1fr 1fr;gap:2px}
+  .logo i{display:block}
+  .logo i:nth-child(1){background:#f25022}.logo i:nth-child(2){background:#7fba00}
+  .logo i:nth-child(3){background:#00a4ef}.logo i:nth-child(4){background:#ffb900}
+  .links a{color:var(--muted);margin-left:26px;font-size:15px}
+  .links a:hover{color:var(--blue);text-decoration:none}
+
+  /* Hero */
+  header.hero{position:relative;overflow:hidden;padding:110px 0 90px}
+  header.hero::before{content:"";position:absolute;inset:-30% -10% auto -10%;height:620px;
+    background:radial-gradient(closest-side at 25% 40%,rgba(0,120,212,.16),transparent 70%),
+               radial-gradient(closest-side at 70% 30%,rgba(134,97,197,.16),transparent 70%),
+               radial-gradient(closest-side at 90% 70%,rgba(216,78,160,.10),transparent 70%);
+    filter:blur(10px);z-index:0}
+  .hero .wrap{position:relative;z-index:1}
+  .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;
+        border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:13px;color:var(--muted)}
+  .pill b{background:var(--grad);color:#fff;padding:2px 8px;border-radius:999px;font-size:11px}
+  h1{font-size:clamp(36px,5.6vw,64px);line-height:1.12;margin:22px 0 18px;font-weight:800;letter-spacing:-.5px}
+  .gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:19px;color:var(--muted);max-width:760px}
+  .cta{margin-top:34px;display:flex;flex-wrap:wrap;gap:14px}
+  .btn{display:inline-block;padding:13px 24px;border-radius:10px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 30px rgba(0,120,212,.35)}
+  .btn.ghost{border:1px solid var(--line);color:#fff;background:rgba(255,255,255,.04)}
+  .btn:hover{text-decoration:none;transform:translateY(-1px)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:64px}
+  .stat{padding:20px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{font-size:13px;color:var(--muted)}
+
+  /* Sections */
+  section{padding:84px 0;border-top:1px solid var(--line)}
+  section:nth-of-type(even){background:var(--bg2)}
+  section:nth-of-type(even) .step{background:#fff}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue)}
+  h2{font-size:clamp(28px,3.4vw,40px);margin:10px 0 14px;line-height:1.2}
+  .sub{color:var(--muted);max-width:780px;font-size:17px}
+  .grid{display:grid;gap:20px;margin-top:40px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--card);box-shadow:0 4px 18px rgba(20,40,90,.06);border:1px solid var(--line);
+        border-radius:16px;padding:28px;position:relative;overflow:hidden}
+  .card::after{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--grad);opacity:.8}
+  .ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:22px;
+       background:rgba(0,120,212,.08);margin-bottom:16px}
+  .card h3{font-size:19px;margin-bottom:8px}
+  .card p,.card li{color:var(--muted);font-size:15px}
+  .card ul{padding-left:18px;margin-top:10px}
+  .card li{margin:6px 0}
+
+  /* Steps */
+  .steps{counter-reset:s;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px}
+  .step{padding:24px;border-radius:14px;border:1px solid var(--line);background:var(--bg2)}
+  .step::before{counter-increment:s;content:counter(s);display:inline-grid;place-items:center;width:34px;height:34px;
+        border-radius:50%;background:var(--grad);font-weight:800;margin-bottom:14px;color:#fff}
+  .step h4{font-size:17px;margin-bottom:6px}
+  .step p{color:var(--muted);font-size:14.5px}
+
+  /* Table */
+  table{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  th,td{padding:16px 20px;text-align:left;font-size:15px;border-bottom:1px solid var(--line)}
+  th{background:#eef3fb;font-weight:700}
+  td{color:var(--muted);background:#fff}
+  td:first-child{color:var(--text);font-weight:600;width:24%}
+  tr:last-child td{border-bottom:none}
+
+  /* Embed */
+  .embed-shell{margin-top:40px;border-radius:18px;padding:2px;background:var(--grad);box-shadow:0 20px 60px rgba(20,40,90,.15)}
+  .embed-inner{background:#fff;border-radius:16px;overflow:hidden}
+  .embed-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .embed-bar span{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .embed-frame{position:relative;width:100%;aspect-ratio:1024/1060;background:#fff}
+  .embed-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .note{margin-top:14px;font-size:13px;color:var(--muted)}
+
+  /* Footer */
+  footer{padding:50px 0;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+
+  @media (max-width:900px){
+    .g3,.g2,.steps,.stats{grid-template-columns:1fr 1fr}
+    .links{display:none}
+  }
+  @media (max-width:600px){
+    .g3,.g2,.steps,.stats{grid-template-columns:1fr}
+    header.hero{padding:70px 0 60px}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><div class="logo"><i></i><i></i><i></i><i></i></div>AI-in-One Dashboard</div>
+    <div class="links">
+      <a href="#overview">報表簡介</a>
+      <a href="#value">報表用途</a>
+      <a href="#how">資料流程</a>
+      <a href="#editions">版本說明</a>
+      <a href="#demo">報表展示</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>AI-in-One Dashboard<br><span class="gt">報表介紹</span></h1>
+    <p class="lead">AI-in-One Dashboard 是 Microsoft 在 GitHub 上提供的 Power BI 範本，用於彙整 Microsoft Copilot 與 Agent 的採用相關資料本頁說明報表的用途、資料來源、版本差異，並附上報表展示</p>
+  </div>
+</header>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="eyebrow">Overview</div>
+    <h2>報表簡介</h2>
+    <p class="sub">AI-in-One Dashboard 將 Microsoft Copilot 與 Agent 的採用資料集中在同一份 Power BI 報表中呈現</p>
+    <div class="grid g3">
+      <div class="card"><div class="ico">📊</div><h3>報表定位</h3><p>一份 Power BI 報表，涵蓋 Microsoft Copilot 與 Agent 的採用資料</p></div>
+      <div class="card"><div class="ico">🗂️</div><h3>資料來源</h3><p>資料由 IT 系統管理員從 Purview、Entra 與 M365 系統管理中心匯出，再處理成報表所需的 Rollup 檔案格式</p></div>
+      <div class="card"><div class="ico">📄</div><h3>授權方式</h3><p>範本以 MIT 授權發佈於 GitHub，並附有說明文件與影片指南</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="value">
+  <div class="wrap">
+    <div class="eyebrow">Purpose</div>
+    <h2>報表用途</h2>
+    <p class="sub">依專案說明，報表提供 Copilot 與 Agent 採用狀況的資訊，供 AI 與業務主管在以下三個面向參考</p>
+    <div class="grid g3">
+      <div class="card"><div class="ico">🧭</div><h3>AI 導入</h3><p>了解 Copilot 與 Agent 在組織內的採用情形</p></div>
+      <div class="card"><div class="ico">🎫</div><h3>授權</h3><p>以使用資料作為授權配置的參考依據</p></div>
+      <div class="card"><div class="ico">🎓</div><h3>賦能</h3><p>作為規劃訓練與推廣活動的參考</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">Data Flow</div>
+    <h2>資料流程</h2>
+    <p class="sub">範本讀取的是預先處理過的 Rollup 檔案；建議使用 PAX（Purview Audit eXporter）腳本產生</p>
+    <div class="steps">
+      <div class="step"><h4>匯出資料</h4><p>IT 系統管理員從 Purview、Entra 與 M365 系統管理中心匯出所需資料</p></div>
+      <div class="step"><h4>執行 PAX</h4><p>以 PAX v1.11.1 以上版本搭配 <code>-Rollup</code> 參數，產生範本所需的 Rollup 檔案</p></div>
+      <div class="step"><h4>開啟範本</h4><p>在 Power BI Desktop 開啟 .pbit 範本，指定檔案位置（本機、SharePoint 或 OneLake）</p></div>
+      <div class="step"><h4>發佈與排程</h4><p>發佈至 Power BI Service；使用 SharePoint 版本即可設定自動排程重新整理</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="editions">
+  <div class="wrap">
+    <div class="eyebrow">Editions</div>
+    <h2>版本說明</h2>
+    <p class="sub">兩個版本共用完全相同的頁面、視覺效果與數字，差別只在於資料來源位置，以及能否在 Power BI Service 中排程重新整理</p>
+    <table>
+      <tr><th></th><th>Rollup Edition（3-in-1 自動偵測）</th><th>Rollup Edition — PBI-SharePoint</th></tr>
+      <tr><td>資料來源位置</td><td>本機路徑、SharePoint URL 或 OneLake URL，自動偵測</td><td>僅限 SharePoint URL</td></tr>
+      <tr><td>最適合</td><td>Power BI Desktop 分析、快速本機試用、OneLake / Fabric</td><td>發佈至 Power BI Service 並自動排程重新整理</td></tr>
+      <tr><td>Service 排程重新整理</td><td>❌ 不支援</td><td>✅ 支援，不需要 Gateway</td></tr>
+      <tr><td>手動 / 隨選重新整理</td><td>✅ Desktop（及 Service 隨選）</td><td>✅</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="eyebrow">Report</div>
+    <h2>報表展示</h2>
+    <p class="sub">以下為 AI-in-One 報表，可直接點選、篩選與切換頁面</p>
+    <div class="embed-shell">
+      <div class="embed-inner">
+        <div class="embed-bar"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span>&nbsp; All In One · Power BI</div>
+        <div class="embed-frame">
+          <iframe title="All In One" src="https://app.fabric.microsoft.com/view?r=eyJrIjoiNjg4ZGJlMGUtNmFlZC00N2VhLTk3YWQtN2RlMzJkMTc2ZmYyIiwidCI6Ijk5YmZhNmZjLTExOGEtNGM4ZC05MTBlLTk2MjRlNjBjZTQwYSIsImMiOjZ9" frameborder="0" allowfullscreen="true" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+    <p class="note">若報表未顯示，請 <a href="https://app.fabric.microsoft.com/view?r=eyJrIjoiNjg4ZGJlMGUtNmFlZC00N2VhLTk3YWQtN2RlMzJkMTc2ZmYyIiwidCI6Ijk5YmZhNmZjLTExOGEtNGM4ZC05MTBlLTk2MjRlNjBjZTQwYSIsImMiOjZ9" target="_blank" rel="noopener">在新視窗開啟報表 ↗</a></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">References</div>
+    <h2>參考資料</h2>
+    <div class="grid g3">
+      <div class="card"><div class="ico">📦</div><h3>AI-in-One Dashboard</h3><p>報表範本、說明文件與影片指南</p><p style="margin-top:12px"><a href="https://github.com/microsoft/AI-in-One-Dashboard" target="_blank" rel="noopener">GitHub ↗</a></p></div>
+      <div class="card"><div class="ico">🛠️</div><h3>PAX</h3><p>Purview Audit eXporter：產生本範本所需輸入檔案的腳本</p><p style="margin-top:12px"><a href="https://github.com/microsoft/PAX" target="_blank" rel="noopener">GitHub ↗</a></p></div>
+      <div class="card"><div class="ico">📊</div><h3>Analytics Hub</h3><p>Microsoft Copilot 相關報表範本的彙整頁面</p><p style="margin-top:12px"><a href="https://microsoft.github.io/Analytics-Hub/" target="_blank" rel="noopener">Analytics Hub ↗</a></p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>AI-in-One Dashboard 報表介紹 · 內容參考 Microsoft GitHub 專案說明</div>
+    <div><a href="https://github.com/microsoft/AI-in-One-Dashboard" target="_blank" rel="noopener">GitHub</a> · <a href="https://microsoft.github.io/Analytics-Hub/" target="_blank" rel="noopener">Analytics Hub</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
